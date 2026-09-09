@@ -1,45 +1,90 @@
 package com.example.todoapp.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import com.example.todoapp.ui.todo.AddTodoBottomSheet
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onSettingsClick: () -> Unit
 ) {
-    var lastClickTime by remember { mutableLongStateOf(0L) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Button(
-            onClick = {
-                val now = System.currentTimeMillis()
+    var showBottomSheet: Boolean by remember { mutableStateOf(false) }
 
-                if(now - lastClickTime > 500L) {
-                    lastClickTime = now
-                    onSettingsClick()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                title = {
+                    Text("Todos")
+                },
+                actions = {
+                    IconButton(
+                        onClick = onSettingsClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
                 }
-            },
-            modifier = Modifier.padding(start = 16.dp, top = 32.dp)
+            )
+
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    showBottomSheet = true
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Todo"
+                    )
+                },
+                text = {
+                    Text("Add Todo")
+                }
+            )
+        },
+
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier.padding(innerPadding)
         ) {
-            Text("Settings")
+
         }
+    }
+    if (showBottomSheet) {
+        AddTodoBottomSheet(
+            onDismiss = {
+                showBottomSheet = false
+            }
+        )
     }
 }

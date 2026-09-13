@@ -38,7 +38,10 @@ fun SettingsScreen(
                 }
             },
             modifier = Modifier
-                .padding(32.dp)
+                .padding(
+                    top = 32.dp,
+                    start = 16.dp,
+                )
         ) {
             Text("Back")
         }

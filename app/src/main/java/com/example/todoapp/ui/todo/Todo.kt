@@ -10,7 +10,7 @@ data class Todo(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val title: String,
-    val description: String,
+    val description: String = "",
     val completed: Boolean = false
 )
 
@@ -54,8 +54,8 @@ class TodoRepository(context: Context) {
 
     val todos: Flow<List<Todo>> = dao.getAll()
 
-    suspend fun add(id: Long, title: String, description: String, completed: Boolean) =
-        dao.insert(Todo(id = id, title = title, description = description, completed = completed))
+    suspend fun add(title: String, description: String) =
+        dao.insert(Todo(title = title, description = description))
 
     suspend fun toggle(todo: Todo) = dao.update(todo.copy(completed = !todo.completed))
     suspend fun delete(todo: Todo) = dao.delete(todo)

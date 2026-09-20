@@ -32,6 +32,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -41,14 +45,15 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddTodoBottomSheet(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onConfirm: (title: String, description: String) -> Unit
 ) {
-    val titleState = rememberTextFieldState()
-    val descriptionState = rememberTextFieldState()
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -98,19 +103,28 @@ fun AddTodoBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
                     shape = RoundedCornerShape(16.dp),
-                    state = titleState,
                     label = { Text("Title") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
                 OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
                     shape = RoundedCornerShape(16.dp),
-                    state = descriptionState,
                     label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Button(onClick = {
-                }) {
+                Button(
+                    onClick = {
+                        if (title.isNotBlank()) {
+                            onConfirm(title, description)
+                        }
+                    },
+                    enabled = title.isNotBlank()
+                ) {
                     Text("Apply")
                 }
             }

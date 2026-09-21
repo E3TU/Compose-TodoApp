@@ -50,6 +50,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,7 +85,8 @@ fun HomeScreen(onSettingsClick: () -> Unit, viewModel: TodoViewModel = viewModel
                     Text(
                         "Todo App",
                         modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.primary,
@@ -103,7 +105,8 @@ fun HomeScreen(onSettingsClick: () -> Unit, viewModel: TodoViewModel = viewModel
                         },
                         label = { Text("Todo") },
                         colors = NavigationDrawerItemDefaults.colors(
-                            unselectedTextColor = MaterialTheme.colorScheme.primary
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
                         ),
                         selected = false,
                         onClick = {}
@@ -119,10 +122,29 @@ fun HomeScreen(onSettingsClick: () -> Unit, viewModel: TodoViewModel = viewModel
                         },
                         label = { Text("Completed Todos") },
                         colors = NavigationDrawerItemDefaults.colors(
-                            unselectedTextColor = MaterialTheme.colorScheme.primary
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
                         ),
                         selected = false,
                         onClick = {}
+                    )
+
+                    NavigationDrawerItem(
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        label = { Text("Settings") },
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
+
+                        ),
+                        selected = false,
+                        onClick = onSettingsClick
                     )
                 }
             }
@@ -154,16 +176,6 @@ fun HomeScreen(onSettingsClick: () -> Unit, viewModel: TodoViewModel = viewModel
                     title = {
                         Text("Todos")
                     },
-                    actions = {
-                        IconButton(
-                            onClick = onSettingsClick
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings"
-                            )
-                        }
-                    }
                 )
 
             },

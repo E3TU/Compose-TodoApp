@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imeNestedScroll
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -44,16 +41,17 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun AddTodoBottomSheet(
+fun TodoBottomSheet(
+    todo: Todo?,
     onDismiss: () -> Unit,
-    onConfirm: (title: String, description: String) -> Unit
+    onConfirm: (id: Long?, title: String, description: String) -> Unit
 ) {
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var title by remember(todo) { mutableStateOf(todo?.title ?: "") }
+    var description by remember(todo) { mutableStateOf(todo?.description ?: "") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -79,7 +77,7 @@ fun AddTodoBottomSheet(
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Add Todo",
+                    text = if (todo == null) "Add Todo" else "Edit Todo",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     modifier = Modifier
@@ -119,9 +117,7 @@ fun AddTodoBottomSheet(
                 )
                 Button(
                     onClick = {
-                        if (title.isNotBlank()) {
-                            onConfirm(title, description)
-                        }
+                        onConfirm(todo?.id, title, description)
                     },
                     enabled = title.isNotBlank()
                 ) {

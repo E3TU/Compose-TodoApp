@@ -23,6 +23,11 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         repository.add( title, description,)
     }
 
+    fun updateTodo(id: Long, title: String, description: String) =
+        viewModelScope.launch {
+            repository.update(id, title, description)
+        }
+
     fun toggle(todo: Todo) = viewModelScope.launch {
         repository.toggle(todo)
     }

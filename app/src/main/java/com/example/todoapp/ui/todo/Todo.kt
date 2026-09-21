@@ -19,6 +19,9 @@ interface TodoDao {
     @Query("SELECT * FROM todos ORDER BY id DESC")
     fun getAll(): Flow<List<Todo>>
 
+    @Query("SELECT * FROM todos WHERE id = :id")
+    suspend fun getById(id: Long): Todo?
+
     @Insert
     suspend fun insert(todo: Todo): Long
 
@@ -56,6 +59,11 @@ class TodoRepository(context: Context) {
 
     suspend fun add(title: String, description: String) =
         dao.insert(Todo(title = title, description = description))
+
+    suspend fun update(id: Long, title: String, description: String) {
+        val existing = dao.getById(id) ?: return
+        dao.update(existing.copy(title = title, description = description))
+    }
 
     suspend fun toggle(todo: Todo) = dao.update(todo.copy(completed = !todo.completed))
     suspend fun delete(todo: Todo) = dao.delete(todo)

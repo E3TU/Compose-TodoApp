@@ -19,31 +19,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsScreen(
-    onBackClick: () -> Unit
 ) {
-    var lastClickTime by remember { mutableLongStateOf(0L) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Button(
-            onClick = {
-                val now = System.currentTimeMillis()
-
-                if (now - lastClickTime > 500L) {
-                    lastClickTime = now
-                    onBackClick()
-                }
-            },
-            modifier = Modifier
-                .padding(
-                    top = 32.dp,
-                    start = 16.dp,
-                )
-        ) {
-            Text("Back")
-        }
+        Text("Settings")
     }
 }

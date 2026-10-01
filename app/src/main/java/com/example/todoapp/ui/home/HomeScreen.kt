@@ -48,6 +48,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -64,176 +65,66 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onSettingsClick: () -> Unit, viewModel: TodoViewModel = viewModel()) {
+fun HomeScreen(viewModel: TodoViewModel = viewModel()) {
     val todos by viewModel.todos.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingTodo by remember { mutableStateOf<Todo?>(null) }
 
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    ModalNavigationDrawer(
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(250.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        "Todo App",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.List,
-                                contentDescription = "Todo",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        label = { Text("Todo") },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                        selected = false,
-                        onClick = {}
-                    )
-
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Checklist,
-                                contentDescription = "Completed Todos",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        label = { Text("Completed Todos") },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                        selected = false,
-                        onClick = {}
-                    )
-
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        label = { Text("Settings") },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
-
-                        ),
-                        selected = false,
-                        onClick = onSettingsClick
-                    )
-                }
-            }
-        },
-        drawerState = drawerState
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) {
-                                    drawerState.open()
-                                } else {
-                                    drawerState.close()
-                                }
-                            }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    title = {
-                        Text("Todos")
-                    },
-                )
-
-            },
-            floatingActionButton = {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        editingTodo = null
-                        showBottomSheet = true
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Todo"
-                        )
-                    },
-                    text = {
-                        Text("Add Todo")
-                    }
-                )
-            },
-
-            ) { innerPadding ->
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
-                items(todos, key = { it.id }) { todo ->
-                    TodoRow(
-                        todo = todo,
-                        onClick = {
-                            editingTodo = todo
-                            showBottomSheet = true
-                        },
-                        onToggle = { viewModel.toggle(todo) },
-                        onDelete = { viewModel.delete(todo) }
-                    )
-                }
-            }
-        }
-        if (showBottomSheet) {
-            TodoBottomSheet(
-                todo = editingTodo,
-                onDismiss = {
-                    showBottomSheet = false
+    Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    editingTodo = null
+                    showBottomSheet = true
                 },
-                onConfirm = { id, title, description ->
-                    if (id == null) {
-                        viewModel.addTodo(title, description)
-                    } else {
-                        viewModel.updateTodo(id, title, description)
-                    }
-                    showBottomSheet = false
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Todo"
+                    )
+                },
+                text = {
+                    Text("Add Todo")
                 }
             )
+        },
+
+        ) { innerPadding ->
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            items(todos, key = { it.id }) { todo ->
+                TodoRow(
+                    todo = todo,
+                    onClick = {
+                        editingTodo = todo
+                        showBottomSheet = true
+                    },
+                    onToggle = { viewModel.toggle(todo) },
+                    onDelete = { viewModel.delete(todo) }
+                )
+            }
         }
+    }
+    if (showBottomSheet) {
+        TodoBottomSheet(
+            todo = editingTodo,
+            onDismiss = {
+                showBottomSheet = false
+            },
+            onConfirm = { id, title, description ->
+                if (id == null) {
+                    viewModel.addTodo(title, description)
+                } else {
+                    viewModel.updateTodo(id, title, description)
+                }
+                showBottomSheet = false
+            }
+        )
     }
 }
 

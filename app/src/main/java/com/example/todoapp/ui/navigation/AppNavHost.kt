@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.todoapp.ui.home.HomeScreen
 import com.example.todoapp.ui.settings.SettingsScreen
@@ -50,6 +51,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppNavigation() {
 
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -57,7 +62,12 @@ fun AppNavigation() {
         mutableStateOf("Home")
     }
 
-    val navController = rememberNavController()
+
+    val title = when (currentRoute) {
+        "home" -> "Home"
+        "settings" -> "Settings"
+        else -> ""
+    }
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -178,7 +188,7 @@ fun AppNavigation() {
                         }
                     },
                     title = {
-                        Text("Todos")
+                        Text(title)
                     },
                 )
             },
@@ -191,10 +201,10 @@ fun AppNavigation() {
                     .background(MaterialTheme.colorScheme.background)
                     .padding(innerPadding)
             ) {
-                composable(Screen.Home.route) {
+                composable("home") {
                     HomeScreen()
                 }
-                composable(Screen.Settings.route) {
+                composable("settings") {
                     SettingsScreen()
                 }
             }

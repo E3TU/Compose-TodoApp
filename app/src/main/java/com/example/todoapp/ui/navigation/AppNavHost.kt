@@ -24,19 +24,24 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -46,6 +51,15 @@ import com.example.todoapp.ui.home.HomeScreen
 import com.example.todoapp.ui.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
+
+enum class Destination(
+    val label: String,
+    val icon: ImageVector,
+    val contentDescription: String
+) {
+    TODO("Todo", Icons.AutoMirrored.Filled.List, "Todo"),
+    COMPLETED("Completed", Icons.Default.Checklist, "Completed")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,11 +76,14 @@ fun AppNavigation() {
         mutableStateOf("Home")
     }
 
-
     val title = when (currentRoute) {
         "home" -> "Home"
         "settings" -> "Settings"
         else -> ""
+    }
+
+    var selectedTab by rememberSaveable {
+        mutableStateOf(Destination.TODO)
     }
 
     ModalNavigationDrawer(
@@ -118,28 +135,6 @@ fun AppNavigation() {
                     NavigationDrawerItem(
                         icon = {
                             Icon(
-                                imageVector = Icons.Default.Checklist,
-                                contentDescription = "Completed Todos",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        label = { Text("Completed Todos") },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                        selected = selectedItem == "Completed Todos",
-                        onClick = {
-                            selectedItem = "Completed Todos"
-                            scope.launch {
-                                drawerState.close()
-                            }
-                        }
-                    )
-
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
                                 tint = MaterialTheme.colorScheme.primary
@@ -167,30 +162,49 @@ fun AppNavigation() {
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) {
-                                    drawerState.open()
-                                } else {
-                                    drawerState.close()
+                Column {
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                scope.launch {
+                                    if (drawerState.isClosed) {
+                                        drawerState.open()
+                                    } else {
+                                        drawerState.close()
+                                    }
                                 }
+                            }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu")
                             }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        },
+                        title = {
+                            Text(title)
+                        },
+                    )
+                    PrimaryTabRow(selectedTabIndex = Destination.entries.indexOf(selectedTab)) {
+                        Destination.entries.forEach { destination ->
+                            Tab(
+                                selected = selectedTab == destination,
+                                onClick = {
+                                    selectedTab = destination
+                                },
+                                text = {
+                                    Text(
+                                        text = destination.label,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            )
                         }
-                    },
-                    title = {
-                        Text(title)
-                    },
-                )
+                    }
+                }
             },
         ) { innerPadding ->
             NavHost(
@@ -201,10 +215,10 @@ fun AppNavigation() {
                     .background(MaterialTheme.colorScheme.background)
                     .padding(innerPadding)
             ) {
-                composable("home") {
-                    HomeScreen()
+                composable(Screen.Home.route) {
+                    HomeScreen(selectedTab = selectedTab)
                 }
-                composable("settings") {
+                composable(Screen.Settings.route) {
                     SettingsScreen()
                 }
             }

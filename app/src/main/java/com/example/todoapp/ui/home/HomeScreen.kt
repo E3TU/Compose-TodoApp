@@ -1,5 +1,6 @@
 package com.example.todoapp.ui.home
 
+import android.content.ClipDescription
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Checkbox
@@ -46,29 +46,34 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.example.todoapp.ui.navigation.Destination
 import com.example.todoapp.ui.todo.TodoBottomSheet
 import com.example.todoapp.ui.todo.Todo
 import com.example.todoapp.ui.todo.TodoViewModel
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: TodoViewModel = viewModel()) {
+fun HomeScreen(selectedTab: Destination, viewModel: TodoViewModel = viewModel()) {
     val todos by viewModel.todos.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingTodo by remember { mutableStateOf<Todo?>(null) }
+
 
     Scaffold(
         floatingActionButton = {
@@ -90,6 +95,7 @@ fun HomeScreen(viewModel: TodoViewModel = viewModel()) {
         },
 
         ) { innerPadding ->
+
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
@@ -97,16 +103,40 @@ fun HomeScreen(viewModel: TodoViewModel = viewModel()) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            items(todos, key = { it.id }) { todo ->
-                TodoRow(
-                    todo = todo,
-                    onClick = {
-                        editingTodo = todo
-                        showBottomSheet = true
-                    },
-                    onToggle = { viewModel.toggle(todo) },
-                    onDelete = { viewModel.delete(todo) }
-                )
+            when (selectedTab) {
+                Destination.TODO -> {
+                    items(
+                        todos.filter { !it.completed },
+                        key = { it.id }
+                    ) { todo ->
+                        TodoRow(
+                            todo = todo,
+                            onClick = {
+                                editingTodo = todo
+                                showBottomSheet = true
+                            },
+                            onToggle = { viewModel.toggle(todo) },
+                            onDelete = { viewModel.delete(todo) }
+                        )
+                    }
+                }
+
+                Destination.COMPLETED -> {
+                    items(
+                        todos.filter { it.completed },
+                        key = { it.id }
+                    ) { todo ->
+                        TodoRow(
+                            todo = todo,
+                            onClick = {
+                                editingTodo = todo
+                                showBottomSheet = true
+                            },
+                            onToggle = { viewModel.toggle(todo) },
+                            onDelete = { viewModel.delete(todo) }
+                        )
+                    }
+                }
             }
         }
     }

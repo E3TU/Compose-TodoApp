@@ -1,6 +1,12 @@
 package com.example.todoapp.ui.home
 
 import android.content.ClipDescription
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -73,6 +80,8 @@ fun HomeScreen(selectedTab: Destination, viewModel: TodoViewModel = viewModel())
     val todos by viewModel.todos.collectAsStateWithLifecycle()
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingTodo by remember { mutableStateOf<Todo?>(null) }
+    val todoListState = rememberLazyListState()
+    val completedListState = rememberLazyListState()
 
 
     Scaffold(
@@ -96,45 +105,63 @@ fun HomeScreen(selectedTab: Destination, viewModel: TodoViewModel = viewModel())
 
         ) { innerPadding ->
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            when (selectedTab) {
-                Destination.TODO -> {
-                    items(
-                        todos.filter { !it.completed },
-                        key = { it.id }
-                    ) { todo ->
-                        TodoRow(
-                            todo = todo,
-                            onClick = {
-                                editingTodo = todo
-                                showBottomSheet = true
-                            },
-                            onToggle = { viewModel.toggle(todo) },
-                            onDelete = { viewModel.delete(todo) }
-                        )
-                    }
-                }
+        AnimatedContent(
+            targetState = selectedTab,
+            transitionSpec = {
+                val forward = targetState == Destination.COMPLETED
+                (slideInHorizontally { width -> if (forward) width else -width } + fadeIn())
+                    .togetherWith(
+                        slideOutHorizontally { width -> if (forward) -width else width } + fadeOut()
+                    )
+            },
+            label = "todoTabs"
+        ) { tab ->
+            val listState =
+                if (tab == Destination.TODO) todoListState else completedListState
 
-                Destination.COMPLETED -> {
-                    items(
-                        todos.filter { it.completed },
-                        key = { it.id }
-                    ) { todo ->
-                        TodoRow(
-                            todo = todo,
-                            onClick = {
-                                editingTodo = todo
-                                showBottomSheet = true
-                            },
-                            onToggle = { viewModel.toggle(todo) },
-                            onDelete = { viewModel.delete(todo) }
-                        )
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+                when (tab) {
+                    Destination.TODO -> {
+                        items(
+                            todos.filter { !it.completed },
+                            key = { it.id }
+                        ) { todo ->
+                            TodoRow(
+                                todo = todo,
+                                modifier = Modifier.animateItem(),
+                                onClick = {
+                                    editingTodo = todo
+                                    showBottomSheet = true
+                                },
+                                onToggle = { viewModel.toggle(todo) },
+                                onDelete = { viewModel.delete(todo) }
+                            )
+                        }
+                    }
+
+                    Destination.COMPLETED -> {
+                        items(
+                            todos.filter { it.completed },
+                            key = { it.id }
+                        ) { todo ->
+                            TodoRow(
+                                todo = todo,
+                                modifier = Modifier.animateItem(),
+                                onClick = {
+                                    editingTodo = todo
+                                    showBottomSheet = true
+                                },
+                                onToggle = { viewModel.toggle(todo) },
+                                onDelete = { viewModel.delete(todo) }
+                            )
+                        }
                     }
                 }
             }
@@ -161,12 +188,13 @@ fun HomeScreen(selectedTab: Destination, viewModel: TodoViewModel = viewModel())
 @Composable
 fun TodoRow(
     todo: Todo,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)

@@ -4,15 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import com.example.todoapp.ui.navigation.AppNavigation
+import com.example.todoapp.ui.settings.SettingsDataStore
 import com.example.todoapp.ui.theme.TodoAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,9 +17,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            TodoAppTheme {
+            AppThemeWrapper {
                 AppNavigation()
             }
         }
+    }
+}
+
+@Composable
+fun AppThemeWrapper(content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val materialYouEnabled by SettingsDataStore
+        .materialYouEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    TodoAppTheme(dynamicColor = materialYouEnabled) {
+        content()
     }
 }
